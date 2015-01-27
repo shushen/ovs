@@ -87,7 +87,7 @@ fi
 if [ $CC = "clang" ]; then
     make CFLAGS="$CFLAGS -Wno-error=unused-command-line-argument"
 else
-    make CFLAGS="$CFLAGS" C=1
+    make CFLAGS="$CFLAGS" C=1 dist-docs
 fi
 
 if [ $TESTSUITE ] && [ $CC != "clang" ]; then
