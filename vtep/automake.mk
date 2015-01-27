@@ -26,18 +26,22 @@ pkgdata_DATA += vtep/vtep.ovsschema
 
 # VTEP E-R diagram
 #
-# If "python" or "dot" is not available, then we do not add graphical diagram
-# to the documentation.
+# If "python" or "dot" or "groff" is not available, then we do not add
+# graphical diagram to the documentation.
 if HAVE_PYTHON
 if HAVE_DOT
+if HAVE_GROFF
 vtep/vtep.gv: ovsdb/ovsdb-dot.in vtep/vtep.ovsschema
-	$(AM_V_GEN)$(OVSDB_DOT) --no-arrows $(srcdir)/vtep/vtep.ovsschema > $@
-vtep/vtep.pic: vtep/vtep.gv ovsdb/dot2pic
-	$(AM_V_GEN)(dot -T plain < vtep/vtep.gv | $(PERL) $(srcdir)/ovsdb/dot2pic -f 3) > $@.tmp && \
+	$(AM_V_GEN)$(OVSDB_DOT) $(srcdir)/vtep/vtep.ovsschema > $@
+vtep/vtep.eps: vtep/vtep.gv
+	$(AM_V_GEN)(dot -T eps < vtep/vtep.gv) > $@.tmp && \
 	mv $@.tmp $@
-VTEP_PIC = vtep/vtep.pic
-VTEP_DOT_DIAGRAM_ARG = --er-diagram=$(VTEP_PIC)
-DISTCLEANFILES += vtep/vtep.gv vtep/vtep.pic
+VTEP_PIC = vtep/vtep.eps
+# Install eps diagram to the same folder as the documentation
+VTEP_DOT_DIAGRAM_ARG = --er-diagram=vtep.eps
+man_MANS += $(VTEP_PIC)
+DISTCLEANFILES += vtep/vtep.gv $(VTEP_PIC)
+endif
 endif
 endif
 

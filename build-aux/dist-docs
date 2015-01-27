@@ -46,7 +46,7 @@ mkdir $distdir
 # Install manpages.
 make install-man mandir="$abs_distdir"/man
 (cd $distdir && mv `find man -type f` . && rm -rf man)
-manpages=`cd $distdir && echo *`
+manpages=`cd $distdir && find ! -iname '*.eps' -type f -print0 |sort -z | sed -r 's/\.\// /g'`
 
 # Start writing index.html.
 exec 3>$distdir/index.html
@@ -102,7 +102,7 @@ EOF
 # cause the groff HTML output engine to segfault (!).
 (cd $distdir
  for manpage in $manpages; do
-     man -l -Tps $manpage | ps2pdf - > $manpage.pdf
+     groff -man -Tps $manpage | ps2pdf - > $manpage.pdf
      man -l -Tutf8 $manpage | sed 's/.//g' > $manpage.txt
      (echo '<html><head><meta charset="UTF-8"></head><body><pre>'
       man -l -Tutf8 $manpage | sed '

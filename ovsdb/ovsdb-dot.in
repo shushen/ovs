@@ -30,8 +30,9 @@ def printEdge(tableName, type, baseType, label):
         options = {}
         options['label'] = '"%s%s"' % (label, arity)
         if baseType.ref_type == 'weak':
-            options['constraint'] = 'false'
-            options['style'] = 'dotted'
+            options['style'] = 'solid'
+	else:
+	    options['style'] = 'bold'
         print "\t%s -> %s [%s];" % (
             tableName,
             baseType.ref_table_name,
@@ -50,7 +51,7 @@ def schemaToDot(schemaFile, arrows):
     for tableName, table in schema.tables.iteritems():
         options = {}
         if table.is_root:
-            options['style'] = 'bold'
+            options['peripheries'] = '2'
         print "\t%s [%s];" % (
             tableName,
             ', '.join(['%s=%s' % (k,v) for k,v in options.items()]))

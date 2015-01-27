@@ -25,18 +25,22 @@ pkgdata_DATA += vswitchd/vswitch.ovsschema
 
 # vswitch E-R diagram
 #
-# If "python" or "dot" is not available, then we do not add graphical diagram
-# to the documentation.
+# If "python" or "dot" or "groff" is not available, then we do not add
+# graphical diagram to the documentation.
 if HAVE_PYTHON
 if HAVE_DOT
+if HAVE_GROFF
 vswitchd/vswitch.gv: ovsdb/ovsdb-dot.in vswitchd/vswitch.ovsschema
-	$(AM_V_GEN)$(OVSDB_DOT) --no-arrows $(srcdir)/vswitchd/vswitch.ovsschema > $@
-vswitchd/vswitch.pic: vswitchd/vswitch.gv ovsdb/dot2pic
-	$(AM_V_GEN)(dot -T plain < vswitchd/vswitch.gv | $(PERL) $(srcdir)/ovsdb/dot2pic -f 3) > $@.tmp && \
+	$(AM_V_GEN)$(OVSDB_DOT) $(srcdir)/vswitchd/vswitch.ovsschema > $@
+vswitchd/vswitch.eps: vswitchd/vswitch.gv
+	$(AM_V_GEN)(dot -T eps < vswitchd/vswitch.gv) > $@.tmp && \
 	mv $@.tmp $@
-VSWITCH_PIC = vswitchd/vswitch.pic
-VSWITCH_DOT_DIAGRAM_ARG = --er-diagram=$(VSWITCH_PIC)
-DISTCLEANFILES += vswitchd/vswitch.gv vswitchd/vswitch.pic
+VSWITCH_PIC = vswitchd/vswitch.eps
+# Install eps diagram to the same folder as the documentation
+VSWITCH_DOT_DIAGRAM_ARG = --er-diagram=vswitch.eps
+man_MANS += $(VSWITCH_PIC)
+DISTCLEANFILES += vswitchd/vswitch.gv $(VSWITCH_PIC)
+endif
 endif
 endif
 

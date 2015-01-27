@@ -341,10 +341,7 @@ constraint on the number of allowed values: \\fB?\\fR for zero or one,
 represent strong references; thin lines represent weak references.
 .RS -1in
 """
-        erStream = open(erFile, "r")
-        for line in erStream:
-            s += line + '\n'
-        erStream.close()
+	s += ".PSPIC "+erFile+"\n"
         s += ".RE\\}\n"
 
     for node in tableNodes:
