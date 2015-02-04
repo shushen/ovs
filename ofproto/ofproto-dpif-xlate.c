@@ -196,6 +196,7 @@ struct xlate_ctx {
     int recurse;                /* Current resubmit nesting depth. */
     int resubmits;              /* Total number of resubmits. */
     bool in_group;              /* Currently translating ofgroup, if true. */
+    bool in_action_set;         /* Currently translating action_set, if true. */
 
     uint32_t orig_skb_priority; /* Priority when packet arrived. */
     uint8_t table_id;           /* OpenFlow table ID where flow was found. */
@@ -3429,8 +3430,15 @@ xlate_output_action(struct xlate_ctx *ctx,
         flood_packets(ctx, true);
         break;
     case OFPP_CONTROLLER:
-        execute_controller_action(ctx, max_len,
-                                  ctx->in_group ? OFPR_GROUP : OFPR_ACTION, 0);
+        {
+            enum ofp_packet_in_reason reason = OFPR_ACTION;
+            if (ctx->in_group){
+                    reason = OFPR_GROUP;
+            }else if (ctx->in_action_set){
+                    reason = OFPR_ACTION_SET;
+            }
+            execute_controller_action(ctx, max_len, reason, 0);
+        }
         break;
     case OFPP_NONE:
         break;
@@ -3712,9 +3720,11 @@ xlate_action_set(struct xlate_ctx *ctx)
     uint64_t action_list_stub[1024 / 64];
     struct ofpbuf action_list;
 
+    ctx->in_action_set = true;
     ofpbuf_use_stub(&action_list, action_list_stub, sizeof action_list_stub);
     ofpacts_execute_action_set(&action_list, &ctx->action_set);
     do_xlate_actions(ofpbuf_data(&action_list), ofpbuf_size(&action_list), ctx);
+    ctx->in_action_set = false;
     ofpbuf_uninit(&action_list);
 }
 
@@ -4398,6 +4408,7 @@ xlate_actions(struct xlate_in *xin, struct xlate_out *xout)
     ctx.recurse = 0;
     ctx.resubmits = 0;
     ctx.in_group = false;
+    ctx.in_action_set = false;
     ctx.orig_skb_priority = flow->skb_priority;
     ctx.table_id = 0;
     ctx.exit = false;
