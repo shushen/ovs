@@ -457,7 +457,7 @@ format_odp_tnl_push_header(struct ds *ds, struct ovs_action_push_tnl *data)
     l3 = eth + 1;
 
     /* Ethernet */
-    ds_put_format(ds, "header(size=%"PRIu8",type=%"PRIu8",eth(dst=",
+    ds_put_format(ds, "header(size=%"PRIu32",type=%"PRIu32",eth(dst=",
                   data->header_len, data->tnl_type);
     ds_put_format(ds, ETH_ADDR_FMT, ETH_ADDR_ARGS(eth->eth_dst));
     ds_put_format(ds, ",src=");
