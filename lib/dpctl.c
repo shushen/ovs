@@ -1496,7 +1496,7 @@ dpctl_normalize_actions(int argc, const char *argv[],
         sort_output_actions(af->actions.data, af->actions.size);
 
         if (af->flow.vlan_tci != htons(0)) {
-            dpctl_print(dpctl_p, "vlan(vid=%"PRIu16",pcp=%d): ",
+            dpctl_print(dpctl_p, "vlan(vid=%"PRIu16",pcp=%"PRIu8"): ",
                         vlan_tci_to_vid(af->flow.vlan_tci),
                         vlan_tci_to_pcp(af->flow.vlan_tci));
         } else {

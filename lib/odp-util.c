@@ -384,9 +384,9 @@ format_vlan_tci(struct ds *ds, ovs_be16 tci, ovs_be16 mask, bool verbose)
         ds_put_char(ds, ',');
     }
     if (verbose || vlan_tci_to_pcp(tci) || vlan_tci_to_pcp(mask)) {
-        ds_put_format(ds, "pcp=%d", vlan_tci_to_pcp(tci));
+        ds_put_format(ds, "pcp=%"PRIu8, vlan_tci_to_pcp(tci));
         if (vlan_tci_to_pcp(mask) != (VLAN_PCP_MASK >> VLAN_PCP_SHIFT)) {
-            ds_put_format(ds, "/0x%x", vlan_tci_to_pcp(mask));
+            ds_put_format(ds, "/0x%"PRIx8, vlan_tci_to_pcp(mask));
         }
         ds_put_char(ds, ',');
     }

@@ -1221,7 +1221,7 @@ match_format(const struct match *match, struct ds *s, int priority)
                               colors.end, vlan_tci_to_vid(f->vlan_tci));
             }
             if (pcp_mask) {
-                ds_put_format(s, "%sdl_vlan_pcp=%s%d,", colors.param,
+                ds_put_format(s, "%sdl_vlan_pcp=%s%"PRIu8",", colors.param,
                               colors.end, vlan_tci_to_pcp(f->vlan_tci));
             }
         } else if (wc->masks.vlan_tci == htons(0xffff)) {
