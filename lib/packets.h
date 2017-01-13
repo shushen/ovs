@@ -421,7 +421,7 @@ vlan_tci_to_vid(ovs_be16 vlan_tci)
 
 /* Given the vlan_tci field from an 802.1Q header, in network byte order,
  * returns the priority code point (PCP) in host byte order. */
-static inline int
+static inline uint8_t
 vlan_tci_to_pcp(ovs_be16 vlan_tci)
 {
     return (ntohs(vlan_tci) & VLAN_PCP_MASK) >> VLAN_PCP_SHIFT;
@@ -429,7 +429,7 @@ vlan_tci_to_pcp(ovs_be16 vlan_tci)
 
 /* Given the vlan_tci field from an 802.1Q header, in network byte order,
  * returns the Canonical Format Indicator (CFI). */
-static inline int
+static inline uint8_t
 vlan_tci_to_cfi(ovs_be16 vlan_tci)
 {
     return (vlan_tci & htons(VLAN_CFI)) != 0;
