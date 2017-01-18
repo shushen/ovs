@@ -342,7 +342,11 @@ lacp_process_packet(struct lacp *lacp, const void *slave_,
         goto out;
     }
 
-    slave->status = LACP_CURRENT;
+    VLOG_WARN("%s: received an LACP PDU on slave %s.", lacp->name, slave->name);
+    if (LACP_CURRENT != slave->status){
+        //lacp->update = true;
+        slave->status = LACP_CURRENT;
+    }
     tx_rate = lacp->fast ? LACP_FAST_TIME_TX : LACP_SLOW_TIME_TX;
     timer_set_duration(&slave->rx, LACP_RX_MULTIPLIER * tx_rate);
 
@@ -469,6 +473,9 @@ slave_may_enable__(struct slave *slave) OVS_REQUIRES(mutex)
 {
     /* The slave may be enabled if it's attached to an aggregator and its
      * partner is synchronized.*/
+    VLOG_WARN("lacp_slave_may_enable: slave %s: attached=%d, fallback_ab=%d, status=%d",
+            slave->name, slave->attached,
+            slave->lacp?slave->lacp->fallback_ab:-1, slave->status);
     return slave->attached && (slave->partner.state & LACP_STATE_SYNC
             || (slave->lacp && slave->lacp->fallback_ab
                 && slave->status == LACP_DEFAULTED));
@@ -542,6 +549,7 @@ lacp_run(struct lacp *lacp, lacp_send_pdu *send_pdu) OVS_EXCLUDED(mutex)
         struct lacp_info actor;
 
         if (!slave_may_tx(slave)) {
+//            VLOG_WARN("lacp_run: slave=%s cannot tx", slave->name);
             continue;
         }
 
@@ -552,6 +560,7 @@ lacp_run(struct lacp *lacp, lacp_send_pdu *send_pdu) OVS_EXCLUDED(mutex)
             long long int duration;
             struct lacp_pdu pdu;
 
+            VLOG_WARN("lacp_run_send_pdu: slave=%s, state=%x", slave->name, actor.state);
             slave->ntt_actor = actor;
             compose_lacp_pdu(&actor, &slave->partner, &pdu);
             send_pdu(slave->aux, &pdu, sizeof pdu);
@@ -563,6 +572,8 @@ lacp_run(struct lacp *lacp, lacp_send_pdu *send_pdu) OVS_EXCLUDED(mutex)
 
             timer_set_duration(&slave->tx, duration);
             seq_change(connectivity_seq_get());
+        }else{
+  //          VLOG_WARN("lacp_run: slave=%s not tx-ing, timer_left=%lld", slave->name, slave->tx.t - time_msec());
         }
     }
     lacp_unlock();
@@ -619,11 +630,12 @@ lacp_update_attached(struct lacp *lacp) OVS_REQUIRES(mutex)
         if (slave->status == LACP_DEFAULTED) {
             if (lacp->fallback_ab) {
                 slave->attached = true;
+                VLOG_WARN("lacp_update_attach: fallback_ab %s attached=%d", slave->name, slave->attached);
             }
             continue;
         }
-
         slave->attached = true;
+        VLOG_WARN("lacp_update_attach: %s attached=%d", slave->name, slave->attached);
         slave_get_priority(slave, &pri);
         bool enable = slave_may_enable__(slave);
 
@@ -640,12 +652,18 @@ lacp_update_attached(struct lacp *lacp) OVS_REQUIRES(mutex)
     lacp->negotiated = lead != NULL;
 
     if (lead) {
+        VLOG_WARN("lacp_update_attach: lead=(%s,"ETH_ADDR_FMT",%d)",
+                lead->name, ETH_ADDR_ARGS(lead->partner.sys_id), ntohs(lead->partner.key));
+
         HMAP_FOR_EACH (slave, node, &lacp->slaves) {
             if ((lacp->fallback_ab && slave->status == LACP_DEFAULTED)
                 || lead->partner.key != slave->partner.key
                 || !eth_addr_equals(lead->partner.sys_id,
                                     slave->partner.sys_id)) {
                 slave->attached = false;
+                VLOG_WARN("lacp_update_attach: slave=%s,"ETH_ADDR_FMT",%d, attached=%d",
+                        slave->name, ETH_ADDR_ARGS(slave->partner.sys_id), ntohs(slave->partner.key),
+                        slave->attached);
             }
         }
     }
@@ -777,6 +795,7 @@ static bool
 slave_may_tx(const struct slave *slave) OVS_REQUIRES(mutex)
 {
     return slave->lacp->active || slave->status != LACP_DEFAULTED;
+    //return slave->lacp->active;
 }
 
 static struct slave *

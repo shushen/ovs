@@ -1297,12 +1297,18 @@ netdev_get_carrier(const struct netdev *netdev)
     enum netdev_flags flags;
     bool carrier;
 
+    //VLOG_WARN("%s: netdev_get_carrier()",
+    //          netdev_get_name(netdev));
     netdev_get_flags(netdev, &flags);
     if (!(flags & NETDEV_UP)) {
+        //VLOG_WARN("%s: !NETDEV_UP",
+        //          netdev_get_name(netdev));
         return false;
     }
 
     if (!netdev->netdev_class->get_carrier) {
+        //VLOG_WARN("%s: get_carrier=NULL",
+        //          netdev_get_name(netdev));
         return true;
     }
 
@@ -1312,6 +1318,8 @@ netdev_get_carrier(const struct netdev *netdev)
                  "down: %s", netdev_get_name(netdev), ovs_strerror(error));
         carrier = false;
     }
+    VLOG_WARN("%s: carrier=%d",
+              netdev_get_name(netdev), carrier);
 
     return carrier;
 }

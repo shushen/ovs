@@ -1675,8 +1675,8 @@ bond_link_status_update(struct bond_slave *slave)
     up = netdev_get_carrier(slave->netdev) && slave->may_enable;
     if ((up == slave->enabled) != (slave->delay_expires == LLONG_MAX)) {
         static struct vlog_rate_limit rl = VLOG_RATE_LIMIT_INIT(5, 20);
-        VLOG_INFO_RL(&rl, "interface %s: link state %s",
-                     slave->name, up ? "up" : "down");
+        VLOG_INFO_RL(&rl, "interface %s: link state %s, may_enable=%d, enabled=%d, expires=%lld",
+                     slave->name, up ? "up" : "down", slave->may_enable, slave->enabled, slave->delay_expires);
         if (up == slave->enabled) {
             slave->delay_expires = LLONG_MAX;
             VLOG_INFO_RL(&rl, "interface %s: will not be %s",

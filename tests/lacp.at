@@ -140,6 +140,7 @@ AT_SETUP([lacp - negotiation])
 # Create bond0 on br0 with interfaces p0 and p1
 #    and bond1 on br1 with interfaces p2 and p3
 # with p0 patched to p2 and p1 patched to p3.
+                            # other-config:lacp-fallback-ab=true
 OVS_VSWITCHD_START(
   [add-bond br0 bond0 p0 p1 bond_mode=balance-tcp lacp=active \
                             other-config:lacp-time=fast \
