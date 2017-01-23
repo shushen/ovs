@@ -192,8 +192,15 @@ parse_lacp_packet(const struct dp_packet *p)
     if (pdu && pdu->subtype == 1
         && pdu->actor_type == 1 && pdu->actor_len == 20
         && pdu->partner_type == 2 && pdu->partner_len == 20) {
+        VLOG_WARN("parse_lacp_packet: l3_ofs=%d", p->l3_ofs);
         return pdu;
     } else {
+        if (pdu) {
+            VLOG_WARN("parse_lacp_packet: subtype=%d actor_type=%d (%d) partner_type=%d (%d)",
+                pdu->subtype, pdu->actor_type, pdu->actor_len, pdu->partner_type, pdu->partner_len);
+        }else{
+            VLOG_WARN("parse_lacp_packet: l3_ofs=%d, size=%d, pdu==NULL", p->l3_ofs, dp_packet_size(p));
+        }
         return NULL;
     }
 }
