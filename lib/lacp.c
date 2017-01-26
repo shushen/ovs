@@ -174,8 +174,8 @@ compose_lacp_pdu(const struct lacp_info *actor,
 
 /* Parses 'b' which represents a packet containing a LACP PDU.  This function
  * returns NULL if 'b' is malformed, or does not represent a LACP PDU format
- * supported by OVS.  Otherwise, it returns a pointer to the lacp_pdu contained
- * within 'b'. */
+ * supported by OVS, or the actor system ID is all zero.  Otherwise, it returns
+ * a pointer to the lacp_pdu contained within 'b'. */
 static const struct lacp_pdu *
 parse_lacp_packet(const struct ofpbuf *b)
 {
@@ -186,7 +186,8 @@ parse_lacp_packet(const struct ofpbuf *b)
 
     if (pdu && pdu->subtype == 1
         && pdu->actor_type == 1 && pdu->actor_len == 20
-        && pdu->partner_type == 2 && pdu->partner_len == 20) {
+        && pdu->partner_type == 2 && pdu->partner_len == 20
+        && !eth_addr_is_zero(pdu->actor.sys_id)) {
         return pdu;
     } else {
         return NULL;
